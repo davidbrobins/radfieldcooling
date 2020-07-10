@@ -17,6 +17,7 @@ table.close()
 CF.frtinitcf(0,constants['lt'][0], constants['ld'][0],constants['np'][0], constants['lp4'][0],constants['qmin'][0],constants['q1'][0],constants['qmax'][0],constants['q2'][0],constants['lx'][0],constants['xmin'][0],constants['xmax'][0], altval, indx, data) #initialize CF with values from cf_table.I2.dat
 
 proton_mass = 1.67262192369e-24*gram #proton mass in grams
+k_boltz=1.3807e-16 #Boltzmann's constant k in erg/K
 def rho_to_n_b(field, data):
     return data["density"]/proton_mass #Convert from mass density to baryon number density by dividing by proton mass (approximate in general, exact for all H
 yt.add_field(('gas', 'baryon_number_density'), function=rho_to_n_b, units='1/cm**3')
@@ -76,3 +77,6 @@ def heating_rate(field, data): #derived field function to get heating function
     data_array.append(P_CVI.to_value())
     return np.apply_along_axis(heating_func_from_array, 0, data_array)*erg*centimeter**3/second #Calculate heating_func_from_array using ith element from each input array  
 yt.add_field(('gas', 'heating_rate'), function=heating_rate, units='erg*cm**3/s')
+def cooling_time(field, data): #derived field to get the cooling time
+    return k_boltz*data['gas','temperature']/(data['gas','baryon_number_density']*data['gas', 'cooling_rate'])
+yt.add_field(('gas', 'cooling_time'), function=cooling_time, units='s')
