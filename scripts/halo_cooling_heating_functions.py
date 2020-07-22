@@ -132,13 +132,13 @@ def isochronous_averaging(df, bins, binning_field='temperature'): #add a boolean
     isochronous_averages_df=pd.DataFrame(columns=[binning_field, 'CF_median', 'CF_25', 'CF_75', 'HF_median', 'HF_25', 'HF_75', 'ctime_median', 'ctime_25', 'ctime_75'])   
     for bin_center in centers: #Loop through the center of each bin
         df['bin_center']=bin_center #Add a column to the dataframe with bin_center as the constant value of the column
-        print(bin_center)
         if binning_field=='temperature': #Array of keys must be [T, n_b, Z, P_LW, P_HI, P_HeI, P_CVI].  Set binning_field to 'bin_center', others to appropriate yt field
             args_for_chft=['bin_center', 'baryon_number_density', 'metallicity', 'RT_DISK_VAR_0', 'RT_DISK_VAR_1', 'RT_DISK_VAR_2', 'RT_DISK_VAR_3']
         elif binning_field=='baryon_number_density':
             args_for_chft=['temperature', 'bin_center', 'metallicity', 'RT_DISK_VAR_0', 'RT_DISK_VAR_1', 'RT_DISK_VAR_2', 'RT_DISK_VAR_3']
         df_for_stats=df.apply(get_CHFT, 1, cols_to_use=args_for_chft, result_type='expand') #Apply get_CHFT to each row and expand to a dataframe
         binned_stats_df=get_median_percentiles(binning_field, bin_center, df_for_stats)
+        print('got stats for bin centered at '+str(bin_center))
         isochronous_averages_df=isochronous_averages_df.append(binned_stats_df, ignore_index=True)
     return isochronous_averages_df
     #binning_field should be either T ('temperature') or n_b  ('baryon_number_density')
@@ -149,18 +149,30 @@ def isochronous_averaging(df, bins, binning_field='temperature'): #add a boolean
     
 
 #testing:
-
+import matplotlib.pyplot as plt
+fig, (ax_c, ax_h)=plt.subplots(2,1,sharex=True) #Create two horizontal plots with the same x-axis (temperature) for the cooling and heating rates                                                          
+colors = ['red', 'blue', 'orange'] #Create an array of colors 
 hc=HaloCatalog("/home/dbrobins/repos/radfieldcooling/scripts/halo_catalogs/RF_0.1451_catalog/RF_0.1451_catalog.0.h5")
 halos_df=hc.halos_df
-df = get_halo_sphere_data(halos_df, "/data/dbrobins/20/A/rei20c1_a0.1451_RF/rei20c1_a0.1451_RF.art", 1, 0.1451, ['temperature', 'baryon_number_density','metallicity', ('artio', 'RT_DISK_VAR_0'), ('artio', 'RT_DISK_VAR_1'), ('artio', 'RT_DISK_VAR_2'), ('artio', 'RT_DISK_VAR_3'), 'cooling_rate', 'heating_rate', 'cooling_time'])
-#print(df)
-df_cut = cut_fields_data(df) 
-#print(df_cut)
-bins=log_spaced_bins(100, 1000, 20)
-centers=get_bin_centers(bins)
-#flowline_df = flowline_averaging(df_cut, bins, binning_field='temperature')
-#print(flowline_df)
-#df_cut.insert(0, 'bin_center', centers[0])
-#print(df_cut)
-isochronous_df=isochronous_averaging(df_cut, bins)
-print(isochronous_df)
+for massive_halo in range(3):
+    Mvir=halos_df.iloc[massive_halo]['Mvir']
+    df = get_halo_sphere_data(halos_df, "/data/dbrobins/20/A/rei20c1_a0.1451_RF/rei20c1_a0.1451_RF.art", massive_halo, 0.1451, ['temperature', 'baryon_number_density','metallicity', ('artio', 'RT_DISK_VAR_0'), ('artio', 'RT_DISK_VAR_1'), ('artio', 'RT_DISK_VAR_2'), ('artio', 'RT_DISK_VAR_3'), 'cooling_rate', 'heating_rate', 'cooling_time'])
+    df_cut = cut_fields_data(df, property='baryon_number_density', min=1, max=10) 
+    df_cut = df_cut.sort_values(by='temperature')
+    bins=log_spaced_bins(df_cut['temperature'].to_numpy()[0], df_cut['temperature'].to_numpy()[-1], 20)
+    flowline_df = flowline_averaging(df_cut, bins, binning_field='temperature')
+    isochronous_df=isochronous_averaging(df_cut, bins)
+    ax_c.plot(isochronous_df['temperature'], isochronous_df['CF_median'], label="Mvir=%.2E [M$_\odot$/h], isochronous" % Mvir, color=colors[massive_halo]) #Plot median cooling vs. bin centers using color allocated to that halo, label with mass to 3 sf                                                                                                                                                           
+    ax_h.plot(isochronous_df['temperature'], isochronous_df['HF_median'], color=colors[massive_halo]) #Do the same thing for heating rate                                                                  
+    ax_c.plot(flowline_df['temperature'], flowline_df['CF_median'], label="Mvir=%.2E [M$_\odot$/h], values" % Mvir, color=colors[massive_halo], linestyle='dashed') #Plot median cooling vs. bin centers using color allocated to that halo, label with mass to 3 sig. figs                                                                                                                                           
+    ax_h.plot(flowline_df['temperature'], flowline_df['HF_median'], color=colors[massive_halo], linestyle='dashed') #Do the same thing for heating rate                                                    
+    ax_c.set_xscale('log') #Set all axes to log scale                                                                                                                                                      
+    ax_c.set_yscale('log')
+    ax_h.set_xscale('log')
+    ax_h.set_yscale('log')
+ax_c.set_xlabel("Temperature T [K]") #Label the axes, create a legend, save the plot                                                                                                                      
+ax_h.set_xlabel("Temperature T [K]")
+ax_c.set_ylabel("$\Lambda$ [erg cm$^3$/s]")
+ax_h.set_ylabel("$\Gamma$ [erg cm$^3$/s]")
+fig.legend(prop={'size':5})
+fig.savefig("/home/dbrobins/repos/radfieldcooling/plots/refactored_flowline_isochronous_comparison_T.png")
