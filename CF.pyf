@@ -1,0 +1,172 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module CF ! in 
+    interface  ! in :CF
+        integer dimension(24,21,16) :: indx
+        integer dimension(3) :: np
+        integer :: mode
+        real dimension(81) :: altval
+        real :: altmin
+        real :: altstp
+        real dimension(13) :: xval
+        real :: xmin
+        real :: xmax
+        real :: xstp
+        real dimension(3) :: qmin
+        real dimension(3) :: qmax
+        real dimension(3) :: qstp
+        real dimension(6,81,13,3789) :: data
+        common /rt_cf_a/ indx
+        common /rt_cf_d/ np,mode
+        common /rt_cf_e/ altval,altmin,altstp,xval,xmin,xmax,xstp,qmin,qmax,qstp
+        common /rt_cf_c/ data
+        subroutine frtinitcf(m,lt_in,ld_in,np_in,lp4_in,qmin_in,q1_in,qmax_in,q2_in,lx_in,xmin_in,xmax_in,altval_in,indx_in,data_in) ! in :CF:frt_cf3.F
+            integer intent(in):: m
+            integer intent(in):: lt_in
+            integer intent(in):: ld_in
+            integer dimension(3),intent(in):: np_in
+            integer intent(in):: lp4_in
+            real dimension(3),intent(in) :: qmin_in
+            real intent(in):: q1_in
+            real dimension(3),intent(in) :: qmax_in
+            real intent(in):: q2_in
+            integer intent(in):: lx_in
+            real intent(in):: xmin_in
+            real intent(in):: xmax_in
+            real dimension(81),intent(in) :: altval_in
+            integer dimension(24,21,16),intent(in) :: indx_in
+            real dimension(6,81,13,3789),intent(in) :: data_in
+            integer dimension(24,21,16) :: indx
+            integer dimension(3) :: np
+            integer :: mode
+            real dimension(81) :: altval
+            real :: altmin
+            real :: altstp
+            real dimension(13) :: xval
+            real :: xmin
+            real :: xmax
+            real :: xstp
+            real dimension(3) :: qmin
+            real dimension(3) :: qmax
+            real dimension(3) :: qstp
+            real dimension(6,81,13,3789) :: data
+            common /rt_cf_a/ indx
+            common /rt_cf_d/ np,mode
+            common /rt_cf_e/ altval,altmin,altstp,xval,xmin,xmax,xstp,qmin,qmax,qstp
+            common /rt_cf_c/ data
+        end subroutine frtinitcf
+        subroutine frtcfpick(it,ich,rch,cfun,hfun) ! in :CF:frt_cf3.F
+            integer intent(n):: it
+            integer dimension(12),intent(in) :: ich
+            real dimension(13),intent() :: rch
+            real intent(out):: cfun
+            real intent(out):: hfun
+            integer dimension(24,21,16) :: indx
+            integer dimension(3) :: np
+            integer :: mode
+            real dimension(81) :: altval
+            real :: altmin
+            real :: altstp
+            real dimension(13) :: xval
+            real :: xmin
+            real :: xmax
+            real :: xstp
+            real dimension(3) :: qmin
+            real dimension(3) :: qmax
+            real dimension(3) :: qstp
+            real dimension(6,81,13,3789) :: data
+            common /rt_cf_a/ indx
+            common /rt_cf_d/ np,mode
+            common /rt_cf_e/ altval,altmin,altstp,xval,xmin,xmax,xstp,qmin,qmax,qstp
+            common /rt_cf_c/ data
+        end subroutine frtcfpick
+        subroutine frtcfcache(den,z,plw,ph1,pg1,pc6,ich,rch,ierr) ! in :CF:frt_cf3.F
+            real intent(in):: den
+            real intent(in):: z
+            real intent(in):: plw
+            real intent(in):: ph1
+            real intent(in):: pg1
+            real intent(in):: pc6
+            integer dimension(12),intent(out) :: ich
+            real dimension(13),intent(out) :: rch
+            integer intent(out):: ierr
+            integer dimension(24,21,16) :: indx
+            integer dimension(3) :: np
+            integer :: mode
+            real dimension(81) :: altval
+            real :: altmin
+            real :: altstp
+            real dimension(13) :: xval
+            real :: xmin
+            real :: xmax
+            real :: xstp
+            real dimension(3) :: qmin
+            real dimension(3) :: qmax
+            real dimension(3) :: qstp
+            real dimension(6,81,13,3789) :: data
+            common /rt_cf_a/ indx
+            common /rt_cf_d/ np,mode
+            common /rt_cf_e/ altval,altmin,altstp,xval,xmin,xmax,xstp,qmin,qmax,qstp
+            common /rt_cf_c/ data
+        end subroutine frtcfcache
+        subroutine frtcfgetln(alt,ich,rch,cfun,hfun) ! in :CF:frt_cf3.F
+            real intent(in):: alt
+            integer dimension(12),intent(in) :: ich
+            real dimension(13),intent(in) :: rch
+            real intent(out):: cfun
+            real intent(out):: hfun
+            integer dimension(24,21,16) :: indx
+            integer dimension(3) :: np
+            integer :: mode
+            real dimension(81) :: altval
+            real :: altmin
+            real :: altstp
+            real dimension(13) :: xval
+            real :: xmin
+            real :: xmax
+            real :: xstp
+            real dimension(3) :: qmin
+            real dimension(3) :: qmax
+            real dimension(3) :: qstp
+            real dimension(6,81,13,3789) :: data
+            common /rt_cf_a/ indx
+            common /rt_cf_d/ np,mode
+            common /rt_cf_e/ altval,altmin,altstp,xval,xmin,xmax,xstp,qmin,qmax,qstp
+            common /rt_cf_c/ data
+        end subroutine frtcfgetln
+        subroutine frtgetcf(tem,den,z,plw,ph1,pg1,pc6,cfun,hfun,ierr) ! in :CF:frt_cf3.F
+            real intent(in):: tem
+            real intent(in):: den
+            real intent(in):: z
+            real intent(in):: plw
+            real intent(in):: ph1
+            real intent(in):: pg1
+            real intent(in):: pc6
+            real intent(out):: cfun
+            real intent(out):: hfun
+            integer intent(out):: ierr
+            integer dimension(24,21,16) :: indx
+            integer dimension(3) :: np
+            integer :: mode
+            real dimension(81) :: altval
+            real :: altmin
+            real :: altstp
+            real dimension(13) :: xval
+            real :: xmin
+            real :: xmax
+            real :: xstp
+            real dimension(3) :: qmin
+            real dimension(3) :: qmax
+            real dimension(3) :: qstp
+            real dimension(6,81,13,3789) :: data
+            common /rt_cf_a/ indx
+            common /rt_cf_d/ np,mode
+            common /rt_cf_e/ altval,altmin,altstp,xval,xmin,xmax,xstp,qmin,qmax,qstp
+            common /rt_cf_c/ data
+        end subroutine frtgetcf
+    end interface 
+end python module CF
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
