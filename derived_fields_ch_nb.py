@@ -27,19 +27,19 @@ def cooling_func_from_array(input_array): #get cooling function from array of in
 def cooling_rate(field, data): #derived field function to get cooling function
     data_array = [] #create array to house the needed data
     T=data['gas', 'temperature']
-    data_array.append(T.to_value()) #append input fields as numpy arrays
+    data_array.append(T.to_ndarray()) #append input fields as numpy arrays
     n_b=data['gas',"baryon_number_density"]
-    data_array.append(n_b.to_value())
+    data_array.append(n_b.to_ndarray())
     Z=data['gas',"metallicity"]
-    data_array.append(Z.to_value())
+    data_array.append(Z.to_ndarray())
     P_LW=data['artio', 'RT_DISK_VAR_0']
-    data_array.append(P_LW.to_value()) #The 4 photoionization rates should be in 1/s, but yt outputs them as unitless
+    data_array.append(P_LW.to_ndarray()) #The 4 photoionization rates should be in 1/s, but yt outputs them as unitless
     P_HI=data['artio', 'RT_DISK_VAR_1']
-    data_array.append(P_HI.to_value())
+    data_array.append(P_HI.to_ndarray())
     P_HeI=data['artio', 'RT_DISK_VAR_2']
-    data_array.append(P_HeI.to_value())
+    data_array.append(P_HeI.to_ndarray())
     P_CVI=data['artio', 'RT_DISK_VAR_3']
-    data_array.append(P_CVI.to_value())
+    data_array.append(P_CVI.to_ndarray())
     return np.apply_along_axis(cooling_func_from_array, 0, data_array)*erg*centimeter**3/second #Calculate cooling_func_from_array using ith element from each input array
 yt.add_field(('gas', 'cooling_rate'), function=cooling_rate, units='erg*cm**3/s')
 def heating_func_from_array(input_array): #get heating function from array of input values (for use in derived field calculation)                                     
@@ -48,21 +48,22 @@ def heating_func_from_array(input_array): #get heating function from array of in
 def heating_rate(field, data): #derived field function to get heating function                                                                                   
     data_array = [] #create array to house the needed data                                                                                                            
     T=data['gas', 'temperature']
-    data_array.append(T.to_value()) #append input fields as numpy arrays                                                                                              
+    data_array.append(T.to_ndarray()) #append input fields as numpy arrays                                                                                              
     n_b=data['gas',"baryon_number_density"]
-    data_array.append(n_b.to_value())
+    data_array.append(n_b.to_ndarray())
     Z=data['gas',"metallicity"]
-    data_array.append(Z.to_value())
+    data_array.append(Z.to_ndarray())
     P_LW=data['artio', 'RT_DISK_VAR_0']
-    data_array.append(P_LW.to_value()) #The 4 photoionization rates should be in 1/s, but yt outputs them as unitless                                          
+    data_array.append(P_LW.to_ndarray()) #The 4 photoionization rates should be in 1/s, but yt outputs them as unitless                                          
     P_HI=data['artio', 'RT_DISK_VAR_1']
-    data_array.append(P_HI.to_value())
+    data_array.append(P_HI.to_ndarray())
     P_HeI=data['artio', 'RT_DISK_VAR_2']
-    data_array.append(P_HeI.to_value())
+    data_array.append(P_HeI.to_ndarray())
     P_CVI=data['artio', 'RT_DISK_VAR_3']
-    data_array.append(P_CVI.to_value())
+    data_array.append(P_CVI.to_ndarray())
     return np.apply_along_axis(heating_func_from_array, 0, data_array)*erg*centimeter**3/second #Calculate heating_func_from_array using ith element from each input array  
 yt.add_field(('gas', 'heating_rate'), function=heating_rate, units='erg*cm**3/s')
 def cooling_time(field, data): #derived field to get the cooling time
     return k_boltz*data['gas','temperature']/(data['gas','baryon_number_density']*data['gas', 'cooling_rate'])
 yt.add_field(('gas', 'cooling_time'), function=cooling_time, units='s')
+

@@ -81,7 +81,7 @@ def get_median_percentiles(binning_field, bin_center, chft_df):
 edian':ct_med, 'ctime_25':ct_25, 'ctime_75':ct_75} #Put the resulting values in an output dataframe
     return averages_df
        
-def flowline_averaging(df, bins, binning_field='temperature'): #, to_save=True, a_exp='0.1451', name='newest'): 
+def flowline_averaging(df, bins, binning_field='temperature', to_save=True, a_exp='0.1451', name='newest'): 
     '''
     Function to take a dataframe and given bins for binning_field and return flowline averages (and 25th, 75th percentiles) for cooling_rate, heating_rate, cooling_time in those bins
     Inputs:
@@ -102,8 +102,10 @@ def flowline_averaging(df, bins, binning_field='temperature'): #, to_save=True, 
         if len(cols_for_averaging.index)>0: #If cols_for_averaging has at least 1 row
             stats_df=get_median_percentiles(binning_field, centers[bin_index], cols_for_averaging) #Extract stats
             flowline_averages_df=flowline_averages_df.append(stats_df, ignore_index=True)
-    #if to_save==True:
-        #isochronous_averages_df.to_pickle('./'+aexp+'/'+name+'_flowline.pkl')
+        else:
+            flowline_averages_df=flowline_averages_df.append({binning_field:centers[bin_index], 'CF_median':np.nan, 'CF_25':np.nan, 'CF_75':np.nan, 'HF_median':np.nan, 'HF_25':np.nan, 'HF_75':np.nan, 'ctime_median':np.nan, 'ctime_25':np.nan, 'ctime_75':np.nan}, ignore_index=True)
+    if to_save==True:
+        flowline_averages_df.to_pickle('saved_dataframes/a'+a_exp+'/'+name+'_flowline.pkl')
     return flowline_averages_df #Return the dataframe after the loop completes
     #if savenpz==True: save centers, c_func_median, h_func_median, c_time_median, percentiles
 
@@ -121,7 +123,7 @@ def get_CHFT(frtargs, cols_to_use=['T', 'n_b', 'Z', 'P_LW', 'P_HI', 'P_HeI', 'P_
     c_time = k_boltz*cfargs[0]/(cfargs[1]*cfun) #(kB*T/n_b*Lambda(T))
     return [cfun, hfun, c_time] #Return the cooling and heating functions, and the cooling time
 
-def isochronous_averaging(df, bins, binning_field='temperature'): #, to_save=True, a_exp='0.1451', name='newest'): #add a boolean argument to_save that defaults to True
+def isochronous_averaging(df, bins, binning_field='temperature', to_save=True, a_exp='0.1451', name='newest'): #add a boolean argument to_save that defaults to True
     '''
     Function to take a dataframe and given bins for binning_field and return isochronous averages (and 25th, 75th percentiles) for cooling_rate, heating_rate, cooling_time in those bins                  
     Inputs:                                                                                                                                                                              
@@ -139,14 +141,14 @@ def isochronous_averaging(df, bins, binning_field='temperature'): #, to_save=Tru
     for bin_center in centers: #Loop through the center of each bin
         df['bin_center']=bin_center #Add a column to the dataframe with bin_center as the constant value of the column
         if binning_field=='temperature': #Array of keys must be [T, n_b, Z, P_LW, P_HI, P_HeI, P_CVI].  Set binning_field to 'bin_center', others to appropriate yt field
-            args_for_chft=['bin_center', 'baryon_number_density', 'metallicity', 'RT_DISK_VAR_0', 'RT_DISK_VAR_1', 'RT_DISK_VAR_2', 'RT_DISK_VAR_3']
+            args_for_chft=['bin_center', 'baryon_number_density', 'metallicity', ('artio','RT_DISK_VAR_0'), ('artio','RT_DISK_VAR_1'), ('artio', 'RT_DISK_VAR_2'), ('artio','RT_DISK_VAR_3')]
         elif binning_field=='baryon_number_density':
-            args_for_chft=['temperature', 'bin_center', 'metallicity', 'RT_DISK_VAR_0', 'RT_DISK_VAR_1', 'RT_DISK_VAR_2', 'RT_DISK_VAR_3']
+            args_for_chft=['temperature', 'bin_center', 'metallicity', ('artio','RT_DISK_VAR_0'), ('artio,','RT_DISK_VAR_1'), ('artio','RT_DISK_VAR_2'), ('artio','RT_DISK_VAR_3')]
         df_for_stats=df.apply(get_CHFT, 1, cols_to_use=args_for_chft, result_type='expand') #Apply get_CHFT to each row and expand to a dataframe
         binned_stats_df=get_median_percentiles(binning_field, bin_center, df_for_stats)
         isochronous_averages_df=isochronous_averages_df.append(binned_stats_df, ignore_index=True)
-    #if to_save==True:
-        #isochronous_averages_df.to_pickle('./'+aexp+'/'+name+'_isochronous.pkl')
+    if to_save==True:
+        isochronous_averages_df.to_pickle('saved_dataframes/a'+a_exp+'/'+name+'_isochronous.pkl')
     return isochronous_averages_df
     #binning_field should be either T ('temperature') or n_b  ('baryon_number_density')
     #loop through centers, add a column to df which is just that T value
@@ -160,16 +162,18 @@ def isochronous_averaging(df, bins, binning_field='temperature'): #, to_save=Tru
 import matplotlib.pyplot as plt
 fig, (ax_c, ax_h)=plt.subplots(2,1,sharex=True) #Create two horizontal plots with the same x-axis (temperature) for the cooling and heating rates                                                          
 colors = ['red', 'blue', 'orange'] #Create an array of colors 
-hc=HaloCatalog("/home/dbrobins/repos/radfieldcooling/scripts/halo_catalogs/RF_0.1451_catalog/RF_0.1451_catalog.0.h5")
+hc=HaloCatalog("/home/dbrobins/repos/radfieldcooling/radfieldcooling/scripts/halo_catalogs/RF_0.1451_catalog/RF_0.1451_catalog.0.h5")
 halos_df=hc.halos_df
 for massive_halo in range(3):
     Mvir=halos_df.iloc[massive_halo]['Mvir']
-    df = get_halo_sphere_data(halos_df, "/data/dbrobins/20/A/rei20c1_a0.1451_RF/rei20c1_a0.1451_RF.art", massive_halo, 0.1451, ['temperature', 'baryon_number_density','metallicity', ('artio', 'RT_DISK_VAR_0'), ('artio', 'RT_DISK_VAR_1'), ('artio', 'RT_DISK_VAR_2'), ('artio', 'RT_DISK_VAR_3'), 'cooling_rate', 'heating_rate', 'cooling_time'])
+    df = get_halo_sphere_data(halos_df, "/nfs/turbo/lsa-cavestru/shared_data/CROC/dbrobins/rei20c1_a0.1451_RF/rei20c1_a0.1451_RF.art", massive_halo, 0.1451, ['temperature', 'baryon_number_density','metallicity', ('artio', 'RT_DISK_VAR_0'), ('artio', 'RT_DISK_VAR_1'), ('artio', 'RT_DISK_VAR_2'), ('artio', 'RT_DISK_VAR_3'), 'cooling_rate', 'heating_rate', 'cooling_time'])
     df_cut = cut_fields_data(df, property='baryon_number_density', min=1, max=10) 
     df_cut = df_cut.sort_values(by='temperature')
     bins=log_spaced_bins(df_cut['temperature'].to_numpy()[0], df_cut['temperature'].to_numpy()[-1], 20)
-    flowline_df = flowline_averaging(df_cut, bins, binning_field='temperature') #, to_save=True, name='most_massive_'+str(massive_halo))
-    isochronous_df=isochronous_averaging(df_cut, bins) #, to_save=True, name='most_massive_'+str(massive_halo))
+    flowline_df = flowline_averaging(df_cut, bins, binning_field='temperature', to_save=True, name='most_massive_'+str(massive_halo))
+    print(flowline_df)
+    isochronous_df=isochronous_averaging(df_cut, bins, to_save=True, name='most_massive_'+str(massive_halo))
+    print(isochronous_df)
     ax_c.plot(isochronous_df['temperature'], isochronous_df['CF_median'], label="Mvir=%.2E [M$_\odot$/h], isochronous" % Mvir, color=colors[massive_halo]) #Plot median cooling vs. bin centers using color allocated to that halo, label with mass to 3 sf                                                                                                                                                           
     ax_h.plot(isochronous_df['temperature'], isochronous_df['HF_median'], color=colors[massive_halo]) #Do the same thing for heating rate                                                                  
     ax_c.plot(flowline_df['temperature'], flowline_df['CF_median'], label="Mvir=%.2E [M$_\odot$/h], values" % Mvir, color=colors[massive_halo], linestyle='dashed') #Plot median cooling vs. bin centers using color allocated to that halo, label with mass to 3 sig. figs                                                                                                                                           
