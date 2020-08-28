@@ -81,7 +81,7 @@ def get_median_percentiles(binning_field, bin_center, chft_df):
 edian':ct_med, 'ctime_25':ct_25, 'ctime_75':ct_75} #Put the resulting values in an output dataframe
     return averages_df
        
-def flowline_averaging(df, bins, binning_field='temperature', to_save=True, a_exp='0.1451', name='newest'): 
+def flowline_averaging(df, bins, binning_field='temperature', to_save=True, filepath='saved_dataframes/a0.1451/newest'): 
     '''
     Function to take a dataframe and given bins for binning_field and return flowline averages (and 25th, 75th percentiles) for cooling_rate, heating_rate, cooling_time in those bins
     Inputs:
@@ -89,8 +89,7 @@ def flowline_averaging(df, bins, binning_field='temperature', to_save=True, a_ex
     bins (ndarray): Array of (logspaced) bins including left and right edges
     binning_field (string): The field to bin in (default to temperature)
     to_save (bool): Whether or not to save the resulting arrays (defaults to True)
-    a_exp (str): String containing float of the scale factor a, for use in saving
-    name (str): A string giving a name to the saved pickle file
+    filepath (str): A string giving a filepath and name for the saved pickle file
     Outputs: 
     flowline_averages_df (dataframe): dataframe with centers of bin in binning_field and median, 25th, 75th percentile for cooling rate, heating rate, and cooling time
     '''
@@ -105,7 +104,7 @@ def flowline_averaging(df, bins, binning_field='temperature', to_save=True, a_ex
         else:
             flowline_averages_df=flowline_averages_df.append({binning_field:centers[bin_index], 'CF_median':np.nan, 'CF_25':np.nan, 'CF_75':np.nan, 'HF_median':np.nan, 'HF_25':np.nan, 'HF_75':np.nan, 'ctime_median':np.nan, 'ctime_25':np.nan, 'ctime_75':np.nan}, ignore_index=True)
     if to_save==True:
-        flowline_averages_df.to_pickle('saved_dataframes/a'+a_exp+'/'+name+'_flowline.pkl')
+        flowline_averages_df.to_pickle(filepath+'_flowline.pkl')
     return flowline_averages_df #Return the dataframe after the loop completes
     #if savenpz==True: save centers, c_func_median, h_func_median, c_time_median, percentiles
 
@@ -123,16 +122,15 @@ def get_CHFT(frtargs, cols_to_use=['T', 'n_b', 'Z', 'P_LW', 'P_HI', 'P_HeI', 'P_
     c_time = k_boltz*cfargs[0]/(cfargs[1]*cfun) #(kB*T/n_b*Lambda(T))
     return [cfun, hfun, c_time] #Return the cooling and heating functions, and the cooling time
 
-def isochronous_averaging(df, bins, binning_field='temperature', to_save=True, a_exp='0.1451', name='newest'): #add a boolean argument to_save that defaults to True
+def isochronous_averaging(df, bins, binning_field='temperature', to_save=True, filepath='saved_dataframes/a0.1451/newest'): #add a boolean argument to_save that defaults to True
     '''
     Function to take a dataframe and given bins for binning_field and return isochronous averages (and 25th, 75th percentiles) for cooling_rate, heating_rate, cooling_time in those bins                  
     Inputs:                                                                                                                                                                              
     df (dataframe): The dataframe used for averaging, must (at minimum) contain columns of T, n_b, Z, P_LW, P_HI, P_HeI, P_CVI                   
     bins (ndarray): Array of (logspaced) bins including left and right edges                                                                                                                               
     binning_field (string): The field to bin in (default to temperature), should be either temperature or baryon_number_density                                                                      
-    to_save (bool): Whether or not to save the resulting arrays (defaults to True)                                                                                                                         
-    a_exp (str): String containing float of the scale factor a, for use in saving                                                                                                                          
-    name (str): A string giving a name to the saved pickle file                                                                                                                     
+    to_save (bool): Whether or not to save the resulting arrays (defaults to True)                                                                                                                                                                                                                  
+    filepath (str): A string giving a filepath and name for the saved pickle file                                                                                                                     
     Outputs:                                                                                                                                                                                               
     isochronous_averages_df (dataframe): dataframe with centers of bin in binning_field and median, 25th, 75th percentile for cooling rate, heating rate, and cooling time                                 
     ''' 
@@ -148,7 +146,7 @@ def isochronous_averaging(df, bins, binning_field='temperature', to_save=True, a
         binned_stats_df=get_median_percentiles(binning_field, bin_center, df_for_stats)
         isochronous_averages_df=isochronous_averages_df.append(binned_stats_df, ignore_index=True)
     if to_save==True:
-        isochronous_averages_df.to_pickle('saved_dataframes/a'+a_exp+'/'+name+'_isochronous.pkl')
+        isochronous_averages_df.to_pickle(filepath+'_isochronous.pkl')
     return isochronous_averages_df
     #binning_field should be either T ('temperature') or n_b  ('baryon_number_density')
     #loop through centers, add a column to df which is just that T value
