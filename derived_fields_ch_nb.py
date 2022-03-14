@@ -6,7 +6,7 @@ import numpy as np
 from scipy.io import FortranFile
 from yt.units import gram, second, erg, K,  centimeter
 import CF
-table=FortranFile('cf_table.I2.dat', 'r', header_dtype=np.int32) #open cf_table.I2.dat and note 4-byte header and footer
+table=FortranFile('/home/dbrobins/repos/radfieldcooling/cf_table.I2.dat', 'r', header_dtype=np.int32) #open cf_table.I2.dat and note 4-byte header and footer
 constants = table.read_record([('lt','i4'),('ld','i4'),('np','i4',3),('lp4','i4'), ('qmin','f4',3), ('q1', 'f4'), ('qmax','f4',3),('q2', 'f4'),('lx', 'i4'),('xmin', 'f4'),('xmax', 'f4')]) #read in the values of several constants (int/float noted from frt_cf3.F)
 altval=table.read_record(np.float32) #Read in array of real temperature values
 indx=table.read_record(np.int32).reshape((24,21,16), order='F') #Read in and reshape 3-D array of indices

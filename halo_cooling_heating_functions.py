@@ -76,9 +76,12 @@ def get_median_percentiles(binning_field, bin_center, chft_df):
     '''
     cf_med, hf_med, ct_med = chft_df.apply(np.median, 0) #Get the median of each column and store                                                                                       
     cf_25, hf_25, ct_25 = chft_df.apply(np.percentile, 0, args=(25,)) #Get the 25th percentile of each column                                                                            
-    cf_75, hf_75, ct_75 = chft_df.apply(np.percentile, 0, args=(75,)) #Get the 75th percentile of each column                                                                            
+    cf_75, hf_75, ct_75 = chft_df.apply(np.percentile, 0, args=(75,)) #Get the 75th percentile of each column                                                                   
+    cf_1, hf_1, ct_1 = chft_df.apply(np.percentile, 0, args=(1,)) #Get the 1st percentile of each column
+
+    cf_99, hf_99, ct_99 = chft_df.apply(np.percentile, 0, args=(99,)) #Get the 99th percentile of each column
     averages_df={binning_field:bin_center, 'CF_median':cf_med, 'CF_25':cf_25, 'CF_75':cf_75, 'HF_median':hf_med, 'HF_25':hf_25, 'HF_75':hf_75, 'ctime_m\
-edian':ct_med, 'ctime_25':ct_25, 'ctime_75':ct_75} #Put the resulting values in an output dataframe
+    edian':ct_med, 'ctime_25':ct_25, 'ctime_75':ct_75, 'CF_1':cf_1, 'HF_1':hf_1, 'CF_99':cf_99, 'HF_99':hf_99} #Put the resulting values in an output dataframe
     return averages_df
        
 def flowline_averaging(df, bins, binning_field='temperature', to_save=True, filepath='saved_dataframes/a0.1451/newest'): 
@@ -94,7 +97,7 @@ def flowline_averaging(df, bins, binning_field='temperature', to_save=True, file
     flowline_averages_df (dataframe): dataframe with centers of bin in binning_field and median, 25th, 75th percentile for cooling rate, heating rate, and cooling time
     '''
     centers=get_bin_centers(bins) #Get (log-spaced) centers of the bins
-    flowline_averages_df=pd.DataFrame(columns=[binning_field, 'CF_median', 'CF_25', 'CF_75', 'HF_median', 'HF_25', 'HF_75', 'ctime_median', 'ctime_25', 'ctime_75'])
+    flowline_averages_df=pd.DataFrame(columns=[binning_field, 'CF_median', 'CF_25', 'CF_75', 'HF_median', 'HF_25', 'HF_75', 'ctime_median', 'ctime_25', 'ctime_75', 'CF_1', 'HF_1', 'CF_99', 'HF_99'])
     for bin_index in range(len(bins)-1): #Loop through the left edges of each bin
         binned_df=cut_fields_data(df, property=binning_field, min=bins[bin_index], max=bins[bin_index+1]) #Cut df to only contain the data where binning_field is within the appropriate bin
         cols_for_averaging=binned_df[['cooling_rate', 'heating_rate', 'cooling_time']]
@@ -102,7 +105,7 @@ def flowline_averaging(df, bins, binning_field='temperature', to_save=True, file
             stats_df=get_median_percentiles(binning_field, centers[bin_index], cols_for_averaging) #Extract stats
             flowline_averages_df=flowline_averages_df.append(stats_df, ignore_index=True)
         else:
-            flowline_averages_df=flowline_averages_df.append({binning_field:centers[bin_index], 'CF_median':np.nan, 'CF_25':np.nan, 'CF_75':np.nan, 'HF_median':np.nan, 'HF_25':np.nan, 'HF_75':np.nan, 'ctime_median':np.nan, 'ctime_25':np.nan, 'ctime_75':np.nan}, ignore_index=True)
+            flowline_averages_df=flowline_averages_df.append({binning_field:centers[bin_index], 'CF_median':np.nan, 'CF_25':np.nan, 'CF_75':np.nan, 'HF_median':np.nan, 'HF_25':np.nan, 'HF_75':np.nan, 'ctime_median':np.nan, 'ctime_25':np.nan, 'ctime_75':np.nan, 'CF_1':np.nan, 'HF_1':np.nan, 'CF_99':np.nan, 'HF_99':np.nan}, ignore_index=True)
     if to_save==True:
         flowline_averages_df.to_pickle(filepath+'_flowline.pkl')
     return flowline_averages_df #Return the dataframe after the loop completes
@@ -135,7 +138,7 @@ def isochronous_averaging(df, bins, binning_field='temperature', to_save=True, f
     isochronous_averages_df (dataframe): dataframe with centers of bin in binning_field and median, 25th, 75th percentile for cooling rate, heating rate, and cooling time                                 
     ''' 
     centers=get_bin_centers(bins) #Get bin centers
-    isochronous_averages_df=pd.DataFrame(columns=[binning_field, 'CF_median', 'CF_25', 'CF_75', 'HF_median', 'HF_25', 'HF_75', 'ctime_median', 'ctime_25', 'ctime_75'])   
+    isochronous_averages_df=pd.DataFrame(columns=[binning_field, 'CF_median', 'CF_25', 'CF_75', 'HF_median', 'HF_25', 'HF_75', 'ctime_median', 'ctime_25', 'ctime_75', 'CF_1', 'HF_1', 'CF_99', 'HF_99'])   
     for bin_center in centers: #Loop through the center of each bin
         df['bin_center']=bin_center #Add a column to the dataframe with bin_center as the constant value of the column
         if binning_field=='temperature': #Array of keys must be [T, n_b, Z, P_LW, P_HI, P_HeI, P_CVI].  Set binning_field to 'bin_center', others to appropriate yt field
